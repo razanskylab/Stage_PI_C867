@@ -6,40 +6,40 @@ classdef PiStage < handle
   % 04/2016 - Johannes Rebling (johannesrebling@gmail.com)
 
   properties % default properties, probably most of your data
-    vel double {mustBePositive}; % [mm/s]
-    pos double {mustBeNonnegative}; % absolute position relative to home
-    acc double {mustBePositive};
-    beSilent = 0;
+    vel(1, 1) double {mustBePositive} = 100; % [mm/s]
+    pos(1, 1) double {mustBeNonnegative}; % absolute position relative to home
+    acc(1, 1) double {mustBePositive} = 1000;
+    beSilent(1, 1) logical = 0;
   end
 
   properties (Constant, Access=public)
-    HOME_POS = 41.5; %[mm]
+    HOME_POS(1, 1) double = 41.5; %[mm]
     LIB_ALIAS = 'PI';
   end
 
   properties (Constant, Hidden=true)
   % can only be changed here in the def file,
   % can't be seen but spi.PropertyName will give result
-    MIN_STEP_SIZE = 0.3 * 1e-3; % [mm] = 300 nm
-    STEP_SIZE_RESOLUTION = 0.1 * 1e-3; % [mm] = 100 nm
-    MAX_POS = 50; % [mm]
-    MIN_POS = 0; % [mm]
-    MAX_VEL = 350; % [mm/s]
-    CONNECT_ON_STARTUP = true;
-    LIB_NAME = 'PI_GCS2_DLL_x64.dll';
-    LIB_PATH = 'C:\Users\Public\PI\PI_Programming_Files_PI_GCS2_DLL\';
-    PTYPE_FILE = 'PI_GCS2_DLL.h';
-    MAX_ID_CHECK = 20; %check if ID=0:MAX_ID_CHECK controllers connected
-    DEFAULT_VEL = 100;
-    DEFAULT_ACC = 1000;
+    MIN_STEP_SIZE(1, 1) double = 0.3e-3; % [mm] = 300 nm
+    STEP_SIZE_RESOLUTION(1, 1) double = 0.1e-3; % [mm] = 100 nm
+    MAX_POS(1, 1) double = 50; % [mm]
+    MIN_POS(1, 1) double = 0; % [mm]
+    MAX_VEL(1, 1) double = 350; % [mm/s]
+    CONNECT_ON_STARTUP(1, 1) logical = 1;
+    LIB_PATH(1, :) char = 'C:\Users\Public\PI\PI_Programming_Files_PI_GCS2_DLL\';
+    LIB_NAME(1, :) char = 'PI_GCS2_DLL_x64.dll';
+    PTYPE_FILE(1, :) char = 'PI_GCS2_DLL.h';
+    MAX_ID_CHECK = 20; % check if ID=0:MAX_ID_CHECK controllers connected
+    DEFAULT_VEL(1, 1) double = 100;
+    DEFAULT_ACC(1, 1) double = 1000;
   end
 
   properties (SetAccess=private)
   %can only be set by methods within this class but can be seen
     ErrorId;
     ServoOn;
-    isConnected = 0;
-    IsReferenced = 0;
+    isConnected(1, 1) logical = 0;
+    IsReferenced(1, 1) logical = 0;
     Axis;
     ContrId;
   end
@@ -54,10 +54,6 @@ classdef PiStage < handle
     StageDescription;
   end
 
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  %% "Standard" methods, i.e. functions which can be called by the user and by
-  % the class itself
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function spi = PiStage(~,doConnect)
@@ -71,7 +67,7 @@ classdef PiStage < handle
         short_warn('[PiStage] Wrong number of input arguemnts. Using default settings!');
       end
 
-      spi.Load_Lib;
+      spi.Load_Lib();
       % connect to stage on startup
       if doConnect
         spi.Open_Connection;
@@ -87,7 +83,7 @@ classdef PiStage < handle
       end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     function saveObj = saveobj(spi)
       % only save public properties of the class if you save it to mat file
       % without this saveobj function you will create an error when trying
@@ -96,7 +92,6 @@ classdef PiStage < handle
       saveObj.pos = spi.pos;
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function delete(spi)
       % Close_Connection from stage if connected
       if spi.isConnected
@@ -109,15 +104,11 @@ classdef PiStage < handle
       end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Property Set & Get functions are down here...
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     function tr = get.TRAVEL_RANGE(spi)
       tr = spi.MAX_POS - spi.MIN_POS;
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     function vel = get.vel(spi)
       % Gets the velocity value commanded with PI_VEL() for szAxes.
       vel = 0;
@@ -126,7 +117,7 @@ classdef PiStage < handle
       vel = vel_.value;
       %FIXME make sure units are correct!
     end
-    %===========================================================================
+    
     function set.vel(spi, vel)
       if (vel>spi.MAX_VEL)
         short_warn('[PiStage] Velocity to high! Sloth and steady wins the race!');
@@ -136,7 +127,6 @@ classdef PiStage < handle
       calllib(spi.LIB_ALIAS,'PI_VEL',spi.ContrId, spi.Axis, vel);
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function acc = get.acc(spi)
       % Gets the accocity value commanded with PI_VEL() for szAxes.
       acc = 0;
@@ -147,15 +137,7 @@ classdef PiStage < handle
     end
     %===========================================================================
     function set.acc(spi, acc)
-      % Set the acceleration to use during moves of szAxes. The PI_ACC() setting
-      % only takes effect when the given axis is in closed-loop operation (servo
-      % on).
-      % if (acc>spi.MAX_VEL)
-      %   short_warn('Velocity to high! Sloth and steady wins the race!');
-      %   short_warn('Setting it to the default speed instead!');
-      %   acc = spi.DEFAULT_VEL;
-      % end
-      calllib(spi.LIB_ALIAS,'PI_ACC',spi.ContrId,spi.Axis,acc);
+      calllib(spi.LIB_ALIAS, 'PI_ACC', spi.ContrId, spi.Axis, acc);
     end
 
 

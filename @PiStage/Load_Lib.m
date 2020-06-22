@@ -1,3 +1,8 @@
+% File: Load_Lib.m @ PiStage
+% Author: Urs Hofmann
+% Mail: hofmannu@biomed.ee.ethz.ch
+% Date: 20-Jan-2020
+
 function Load_Lib(spi)
 
   % Only load library if it is not loaded yet
@@ -8,8 +13,13 @@ function Load_Lib(spi)
     end
 
     % using protoype file makes loading A LOT faster
-    [notfound, warnings] = ...
-      loadlibrary([spi.LIB_PATH, spi.LIB_NAME], [spi.LIB_PATH, spi.PTYPE_FILE], 'alias',spi.LIB_ALIAS);
+    libPath = [spi.LIB_PATH, spi.LIB_NAME];
+    headerPath = [spi.LIB_PATH, spi.PTYPE_FILE];
+    [notfound, warnings] = loadlibrary(...
+      libPath, ...
+      headerPath, ...
+      'alias', spi.LIB_ALIAS);
+        % [spi.LIB_PATH, spi.PTYPE_FILE], ...
 
   else
 
@@ -19,5 +29,4 @@ function Load_Lib(spi)
 
   end
 
-  % show function arguments with libfunctionsview(LIB_ALIAS);
 end
