@@ -13,7 +13,7 @@
 
 function Set_Recorder_Trigger_Source(spi, recTableID, triggerSource)
 
-  szAxes='1';
+  szAxes = '1';
   pSzAxes = libpointer('cstring', szAxes);
   piValues1 = libpointer('int32Ptr', recTableID);
   piValues2 = libpointer('int32Ptr', triggerSource);

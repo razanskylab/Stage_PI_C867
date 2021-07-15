@@ -61,7 +61,7 @@ function [stagePosData] = Read_Position_Data(spi, iTables, nDataPoints)
     szAnswer = blanks(1001);
     [~,szAnswer] = calllib(spi.LIB_ALIAS,'PI_TranslateError',iErr,szAnswer,1000);
     if ~strcmp(szAnswer,'No error')
-      short_warn(['Error while reading out data: ', szAnswer]);
+      warning(['Error while reading out data: ', szAnswer]);
     end
 
     error('[PiStage] Error reading out recorded position data.');

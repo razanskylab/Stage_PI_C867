@@ -1,9 +1,14 @@
+% File: PiStage.m
+% Author: Urs Hofmann
+% Mail: hofmannu@ethz.ch
+% Date: 17.07.2021
+
+% Description: An interfacing class to be used with the Pi C 867 controller
+
+% TODO
+%     automatically get maximum allowed travel range from stage on startup
+
 classdef PiStage < handle
-  % driver class for the PI linear piezo stage
-  % stage type M-683 Linear Stage
-  % see pi_stages.md file in the wiki for details on the stage
-  %
-  % 04/2016 - Johannes Rebling (johannesrebling@gmail.com)
 
   properties % default properties, probably most of your data
     vel(1, 1) double {mustBePositive} = 100; % [mm/s]
@@ -26,7 +31,7 @@ classdef PiStage < handle
     MIN_POS(1, 1) double = 0; % [mm]
     MAX_VEL(1, 1) double = 350; % [mm/s]
     CONNECT_ON_STARTUP(1, 1) logical = 1;
-    LIB_PATH(1, :) char = 'C:\Users\Public\PI\PI_Programming_Files_PI_GCS2_DLL\';
+    LIB_PATH(1, :) char = 'C:\Program Files (x86)\Physik Instrumente (PI)\Software Suite\Development\C++\API\';
     LIB_NAME(1, :) char = 'PI_GCS2_DLL_x64.dll';
     PTYPE_FILE(1, :) char = 'PI_GCS2_DLL.h';
     MAX_ID_CHECK = 20; % check if ID=0:MAX_ID_CHECK controllers connected
@@ -70,7 +75,7 @@ classdef PiStage < handle
       spi.Load_Lib();
       % connect to stage on startup
       if doConnect
-        spi.Open_Connection;
+        spi.Open_Connection();
         spi.Switch_On_Servo;
         if ~spi.IsReferenced
           spi.Reference;
@@ -83,6 +88,11 @@ classdef PiStage < handle
       end
     end
 
+    % externally defined functions
+    Define_Position_Trigger(ps, varargin);
+    Read_Error(ps, varargin);
+    Enable_Trigger(ps, vararign);
+    [nIn, nOut] = Get_Available_IO(ps);
     
     function saveObj = saveobj(spi)
       % only save public properties of the class if you save it to mat file
@@ -108,20 +118,18 @@ classdef PiStage < handle
       tr = spi.MAX_POS - spi.MIN_POS;
     end
 
-    
+    % get velocity of axis
     function vel = get.vel(spi)
-      % Gets the velocity value commanded with PI_VEL() for szAxes.
       vel = 0;
       vel_= libpointer('doublePtr',vel);
       [~] = calllib(spi.LIB_ALIAS,'PI_qVEL',spi.ContrId,spi.Axis,vel_);
       vel = vel_.value;
-      %FIXME make sure units are correct!
     end
     
     function set.vel(spi, vel)
       if (vel>spi.MAX_VEL)
-        short_warn('[PiStage] Velocity to high! Sloth and steady wins the race!');
-        short_warn('[PiStage] Setting it to the default speed instead!');
+        warning('[PiStage] Velocity to high! Sloth and steady wins the race!');
+        warning('[PiStage] Setting it to the default speed instead!');
         vel = spi.DEFAULT_VEL;
       end
       calllib(spi.LIB_ALIAS,'PI_VEL',spi.ContrId, spi.Axis, vel);
@@ -133,9 +141,8 @@ classdef PiStage < handle
       acc_= libpointer('doublePtr',acc);
       [ret] = calllib(spi.LIB_ALIAS,'PI_qACC',spi.ContrId,spi.Axis,acc_);
       acc = acc_.value;
-      %FIXME make sure units are correct!
     end
-    %===========================================================================
+
     function set.acc(spi, acc)
       calllib(spi.LIB_ALIAS, 'PI_ACC', spi.ContrId, spi.Axis, acc);
     end
@@ -219,18 +226,10 @@ classdef PiStage < handle
 
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     function isConnected = get.isConnected(spi)
       % Get the servo-control mode (on = closed loop, off = open loop) for szAxes
       isConnected = calllib(spi.LIB_ALIAS, 'PI_IsConnected', spi.ContrId);
     end
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Depedent properties get functions
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % function countsPerMM = get.CountsPerMM(spi)
-    %   countsPerMM = round(spi.GEAR_RATIO*spi.COUNTER_RES*spi.ROT_TO_TRANS);
-    % end
 
   end
 end

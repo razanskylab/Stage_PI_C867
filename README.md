@@ -9,3 +9,5 @@ Requirements:
 *  MATLAB (tested version: 2019b)
 *  PIMikroMove (tested version: 2.29.3.0)
 *  C compiler to load librarys (tested with Visual Studio 2019, could not get it running with MinGW)
+
+Before using the library make sure that the path for the DLL  (property `LIB_PATH`) is set to the correct destination on your PC.
