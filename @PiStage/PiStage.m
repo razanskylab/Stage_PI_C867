@@ -19,12 +19,12 @@ classdef PiStage < handle
 
   properties (Constant, Access=public)
     HOME_POS(1, 1) double = 41.5; %[mm]
-    LIB_ALIAS = 'PI';
   end
 
   properties (Constant, Hidden=true)
   % can only be changed here in the def file,
   % can't be seen but spi.PropertyName will give result
+    LIB_ALIAS = 'PI';
     MIN_STEP_SIZE(1, 1) double = 0.3e-3; % [mm] = 300 nm
     STEP_SIZE_RESOLUTION(1, 1) double = 0.1e-3; % [mm] = 100 nm
     MAX_POS(1, 1) double = 50; % [mm]
@@ -90,8 +90,15 @@ classdef PiStage < handle
 
     % externally defined functions
     Define_Position_Trigger(ps, varargin);
+    Define_Trigger_Res(ps, trigRes, outputChannel);
+    Define_Trigger_Mode(ps, trigMode, outputChannel);
+    Define_Trigger_Start(ps, startPos, outputChannel);
+    Define_Trigger_Stop(ps, stopPos, outputChannel);
+    Define_Trigger_Pol(ps, trigPol, outputChannel);
+    Define_Trigger_Length(ps, trigLength, outputChannel);
+
     Read_Error(ps, varargin);
-    Enable_Trigger(ps, vararign);
+    Enable_Trigger(ps, varargin);
     [nIn, nOut] = Get_Available_IO(ps);
     
     function saveObj = saveobj(spi)

@@ -11,3 +11,10 @@ Requirements:
 *  C compiler to load librarys (tested with Visual Studio 2019, could not get it running with MinGW)
 
 Before using the library make sure that the path for the DLL  (property `LIB_PATH`) is set to the correct destination on your PC.
+
+
+# Known errors and bugs
+
+### Library not found error by calllib
+
+Simply restart MATLAB, this happens when you try to set the external trigger but it is already up and running.
